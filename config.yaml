@@ -1,0 +1,12 @@
+credentials:
+  usernames:
+    admin:
+      name: Admin
+      password: $2b$12$9/LVxFnSvRg26DnywseBf.2SDwUbc8FUY3svUPKDnKE.u//gZhoU2
+    ceo:
+      name: CEO
+      password: $2b$12$DWmtCRlovHz1i0xlDV07T.KYrS/fXROi7M34/c02VHOfhRvBSAvBi
+cookie:
+  expiry_days: 30
+  key: random_signature_key # Must be string
+  name: random_cookie_name
