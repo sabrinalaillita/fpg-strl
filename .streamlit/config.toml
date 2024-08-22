@@ -1,0 +1,8 @@
+[theme]
+base="dark"
+primaryColor="#b78343"
+backgroundColor="#2a3d33"
+secondaryBackgroundColor="#2d2926"
+
+[browser]
+showSidebarNavigation = false
