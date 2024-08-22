@@ -30,7 +30,7 @@ st.title("Exploratory Data Analysis")
 
 with st.sidebar:
     
-    st.image("cropped-Logo-Kedai.png", width=120)
+    st.image("cropped-Logo-Kedai.png", width=150)
     st.write("##")
     st.page_link("Home.py", label="Home", icon="🏠")
     st.page_link("pages/EDA.py", label="Exploratory Data Analysis", icon="📈")
