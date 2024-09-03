@@ -33,7 +33,7 @@ with st.sidebar:
     st.image("cropped-Logo-Kedai.png", width=150)
     st.write("##")
     st.page_link("Home.py", label="Home", icon="🏠")
-    st.page_link("pages/EDA.py", label="Exploratory Data Analysis", icon="📈")
     st.page_link("pages/MBA.py", label="Market Basket Analysis", icon="🛒")
+    st.page_link("pages/EDA.py", label="Exploratory Data Analysis", icon="📈")
     st.write("##")
     authenticator.logout("Logout", "sidebar")
