@@ -7,6 +7,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from pyvis.network import Network
+from datetime import datetime
+
 sns.set(style='dark')
 
 # Load configuration
@@ -65,6 +67,7 @@ def create_sum_order_outlets_df(df):
 if 'uploaded_file' not in st.session_state:
     st.header("Exploratory Data Analysis")
     st.text(f"Welcome, {st.session_state.get("name")}👋")
+    st.markdown("")
     uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
     if uploaded_file is not None:
         # Store the file in session state so it's available after the page reloads
@@ -77,6 +80,7 @@ if 'uploaded_file' in st.session_state:
 
     # Load the CSV file into a pandas DataFrame
     df = pd.read_csv(uploaded_file)
+    uploaded_file.seek(0)
 
     # Clean and preprocess the data
     df['Tanggal'] = pd.to_datetime(df['Tanggal'])
@@ -96,52 +100,56 @@ if 'uploaded_file' in st.session_state:
     # Get min and max date for the date range
     min_date = df_clean["Tanggal"].min()
     max_date = df_clean["Tanggal"].max()
-
-    # Sidebar: allow the user to choose a date range
-    with st.sidebar:
-        st.write("##")
-        start_date, end_date = st.date_input(
-            label='Rentang Waktu', min_value=min_date,
-            max_value=max_date, value=[min_date, max_date]
-        )
-
+    start_date = min_date.strftime("%B %d, %Y")
+    end_date = max_date.strftime("%B %d, %Y")
+    filtered_dates = """
+                    <p style="text-align: center;">📅 {} to {}</p>  
+                    """.format(start_date,end_date)
+    
     # Filter the data based on the date range
-    main_df = df_clean[(df_clean["Tanggal"] >= pd.to_datetime(start_date)) &
-                       (df_clean["Tanggal"] <= pd.to_datetime(end_date))]
+    main_df = df_clean[(df_clean["Tanggal"] >= pd.to_datetime(min_date)) &
+                       (df_clean["Tanggal"] <= pd.to_datetime(max_date))]
 
-    # Display filtered data and EDA results
-    st.subheader("Filtered Data")
-    st.write(f"Data from {start_date} to {end_date}")
-    st.dataframe(main_df.head())
+    # Display EDA results
+    head,_,__, date = st.columns([2,2,1,2])
+    with head:
+        st.header("Overview Dashboard")
+        st.markdown("#####")
+    with date:
+        container = st.container(border=True)
+        container.markdown(filtered_dates, unsafe_allow_html=True)
+    
+    st.metric(label="Temperature", value="70 °F", delta="1.2 °F")
+    
 
-    # Summarize order items
-    st.subheader("Order Items Summary")
-    sum_order_items_df = df_clean.groupby("NamaProduk").Qty.sum().sort_values(ascending=False).reset_index()
-    st.dataframe(sum_order_items_df)
+    # # Summarize order items
+    # st.subheader("Order Items Summary")
+    # sum_order_items_df = df_clean.groupby("NamaProduk").Qty.sum().sort_values(ascending=False).reset_index()
+    # st.dataframe(sum_order_items_df)
 
-    # Summarize order outlets
-    st.subheader("Order Outlets Summary")
-    sum_order_outlets_df = df_clean.groupby("Outlet").Qty.sum().sort_values(ascending=False).reset_index()
-    st.dataframe(sum_order_outlets_df)
+    # # Summarize order outlets
+    # st.subheader("Order Outlets Summary")
+    # sum_order_outlets_df = df_clean.groupby("Outlet").Qty.sum().sort_values(ascending=False).reset_index()
+    # st.dataframe(sum_order_outlets_df)
 
-    # Show monthly orders
-    st.subheader("Monthly Orders and Revenue")
-    monthly_orders_df = df_clean.resample(rule='ME', on='Tanggal').agg({
-        "NomorFaktur": "nunique",
-        "HeaderTotalFaktur": "sum"
-    }).reset_index().rename(columns={"NomorFaktur": "order_count", "HeaderTotalFaktur": "revenue"})
-    monthly_orders_df.index = monthly_orders_df["Tanggal"].dt.strftime('%Y-%m')
-    st.dataframe(monthly_orders_df)
+    # # Show monthly orders
+    # st.subheader("Monthly Orders and Revenue")
+    # monthly_orders_df = df_clean.resample(rule='ME', on='Tanggal').agg({
+    #     "NomorFaktur": "nunique",
+    #     "HeaderTotalFaktur": "sum"
+    # }).reset_index().rename(columns={"NomorFaktur": "order_count", "HeaderTotalFaktur": "revenue"})
+    # monthly_orders_df.index = monthly_orders_df["Tanggal"].dt.strftime('%Y-%m')
+    # st.dataframe(monthly_orders_df)
 
-    # Plot revenue over time
-    st.subheader("Revenue Over Time")
-    plt.figure(figsize=(10, 5))
-    sns.lineplot(x=monthly_orders_df.index, y=monthly_orders_df['revenue'], marker="o")
-    plt.title('Monthly Revenue')
-    plt.xlabel('Month')
-    plt.ylabel('Revenue')
-    plt.xticks(rotation=45)
-    st.pyplot(plt)
+    # # Plot revenue over time
+    # st.subheader("Revenue Over Time")
+    # plt.figure(figsize=(10, 5))
+    # sns.lineplot(x=monthly_orders_df.index, y=monthly_orders_df['revenue'], marker="o")
+    # plt.title('Monthly Revenue')
+    # plt.xlabel('Month')
+    # plt.ylabel('Revenue')
+    # plt.xticks(rotation=45)
+    # st.pyplot(plt)
 
     
 
