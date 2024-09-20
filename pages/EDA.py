@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import altair as alt
 from pyvis.network import Network
 from datetime import datetime
 
@@ -103,12 +104,12 @@ if 'uploaded_file' in st.session_state:
     start_date = min_date.strftime("%B %d, %Y")
     end_date = max_date.strftime("%B %d, %Y")
     filtered_dates = """
-                    <p style="text-align: center;">📅 {} to {}</p>  
+                    <p style="text-align: center;">📅 {} - {}</p>  
                     """.format(start_date,end_date)
     
-    # Filter the data based on the date range
-    main_df = df_clean[(df_clean["Tanggal"] >= pd.to_datetime(min_date)) &
-                       (df_clean["Tanggal"] <= pd.to_datetime(max_date))]
+    # # Filter the data based on the date range
+    # main_df = df_clean[(df_clean["Tanggal"] >= pd.to_datetime(min_date)) &
+    #                    (df_clean["Tanggal"] <= pd.to_datetime(max_date))]
 
     # Display EDA results
     head,_,__, date = st.columns([2,2,1,2])
@@ -118,38 +119,178 @@ if 'uploaded_file' in st.session_state:
     with date:
         container = st.container(border=True)
         container.markdown(filtered_dates, unsafe_allow_html=True)
-    
-    st.metric(label="Temperature", value="70 °F", delta="1.2 °F")
-    
 
-    # # Summarize order items
-    # st.subheader("Order Items Summary")
-    # sum_order_items_df = df_clean.groupby("NamaProduk").Qty.sum().sort_values(ascending=False).reset_index()
-    # st.dataframe(sum_order_items_df)
+    
+    # Show monthly orders
+    # st.subheader("Monthly Orders and Revenue")
+    monthly_orders_df = df_clean.resample(rule='ME', on='Tanggal').agg({
+        "NomorFaktur": "nunique",
+        "HeaderTotalFaktur": "sum"
+    }).reset_index().rename(columns={"NomorFaktur": "order_count", "HeaderTotalFaktur": "revenue"})
+    monthly_orders_df["Tanggal"] = pd.to_datetime(monthly_orders_df["Tanggal"])
 
-    # # Summarize order outlets
-    # st.subheader("Order Outlets Summary")
-    # sum_order_outlets_df = df_clean.groupby("Outlet").Qty.sum().sort_values(ascending=False).reset_index()
+    metric1, metric2 = st.columns(2)
+    with metric1:
+        # Get the most recent two months to calculate the sales difference
+        if len(monthly_orders_df) >= 2:
+            # Sort by date to ensure proper comparison
+            monthly_orders_df = monthly_orders_df.sort_values(by="Tanggal", ascending=False)
+
+            current_month_sales = monthly_orders_df.iloc[0]['order_count']  # Most recent month's order_count
+            previous_month_sales = monthly_orders_df.iloc[1]['order_count']  # Previous month's order_count
+
+            # Calculate the absolute delta (difference) and percentage change
+            delta = current_month_sales - previous_month_sales
+            delta_percentage = (delta / previous_month_sales) * 100
+
+            # Use st.metric to display the current month's sales and the change
+            st.metric(label="Sales", value=f"{current_month_sales:,.2f}", delta=f"{delta:,.2f} ({delta_percentage:.2f}%)")
+        else:
+            st.write("Not enough data to calculate monthly sales change.")
+    
+    with metric2:
+        # Get the most recent two months to calculate the sales difference
+        if len(monthly_orders_df) >= 2:
+            # Sort by date to ensure proper comparison
+            monthly_orders_df = monthly_orders_df.sort_values(by="Tanggal", ascending=False)
+
+            current_month_revenue = monthly_orders_df.iloc[0]['revenue']  # Most recent month's revenue
+            previous_month_revenue = monthly_orders_df.iloc[1]['revenue']  # Previous month's revenue
+
+            # Calculate the absolute delta (difference) and percentage change
+            delta = current_month_revenue - previous_month_revenue
+            delta_percentage = (delta / previous_month_revenue) * 100
+
+            # Use st.metric to display the current month's sales and the change
+            st.metric(label="Revenue", value=f"{current_month_revenue:,.2f} IDR", delta=f"{delta:,.2f} IDR ({delta_percentage:.2f}%)")
+        else:
+            st.write("Not enough data to calculate monthly sales change.")
+    
+    # # Display the dataframe
+    # st.dataframe(monthly_orders_df)
+    numOrder, numRev = st.columns(2)
+    # Create line chart using Altair with title and y-axis limits
+    with numOrder:
+        st.subheader("Number of Orders per Month")
+        chart = alt.Chart(monthly_orders_df).mark_line(point=True).encode(
+            color=alt.value("#b78343"),
+            x=alt.X('yearmonth(Tanggal):T', title='Month'),
+            y=alt.Y('order_count:Q', title='Orders', scale=alt.Scale(domain=[5000, 9000]))
+        ).properties(
+            width=700,
+            height=400
+        )
+
+        # Display the Altair chart in Streamlit
+        st.altair_chart(chart)
+        
+    with numRev:
+        st.subheader("Total Revenue per Month")
+        chart2 = alt.Chart(monthly_orders_df).mark_line(point=True).encode(
+            color=alt.value("#b78343"),
+            x=alt.X('yearmonth(Tanggal):T', title='Month'),
+            y=alt.Y('revenue:Q', title='Revenue', scale=alt.Scale(domain=[2000000000, 5000000000]))
+        ).properties(
+            width=700,
+            height=400
+        )
+
+        # Display the Altair chart in Streamlit
+        st.altair_chart(chart2)
+    
+    # Summarize order items
+    sum_order_items_df = df_clean.groupby("NamaProduk").Qty.sum().sort_values(ascending=False).reset_index()
+
+    bestProd, worstProd = st.columns(2)
+    
+    with bestProd:
+        # Best Performing Products (Top 5)
+        st.subheader("Best Performing Products by Number of Sales")
+
+        # Assuming `sum_order_items_df` has already been created with the top products and their quantities
+        best_products = sum_order_items_df.head(10)
+        # st.dataframe(best_products)
+
+        # Create the Altair bar chart
+        best_products_chart = alt.Chart(best_products).mark_bar().encode(
+            x=alt.X('Qty:Q', title='Quantity Sold'),
+            y=alt.Y('NamaProduk:N', sort='-x', title=None, axis=alt.Axis(labelLimit=500)),  # Sorting by Qty, removing y-axis title
+            color=alt.condition(
+                alt.datum.NamaProduk == best_products.iloc[0]['NamaProduk'],  # Highlight top product
+                alt.value('#b78343'),  # Color for the best product
+                alt.value('#D3D3D3')  # Color for the other products
+            )
+        ).properties(
+            width=600,
+            height=600
+        )
+
+        # Display the chart in Streamlit
+        st.altair_chart(best_products_chart)
+
+    with worstProd:
+        # Worst Performing Products (Bottom 5)
+        st.subheader("Worst Performing Products by Number of Sales")
+
+        # Assuming `sum_order_items_df` has already been created with the worst products and their quantities
+        worst_products = sum_order_items_df.tail(10).sort_values(by="Qty", ascending=True)
+        # st.dataframe(worst_products)
+
+        # Create the Altair bar chart
+        worst_products_chart = alt.Chart(worst_products).mark_bar().encode(
+            x=alt.X('Qty:Q', title='Quantity Sold'),
+            y=alt.Y('NamaProduk:N', sort='-x', title=None, axis=alt.Axis(labelLimit=500)),  # Sorting by Qty, removing y-axis title
+            color=alt.condition(
+                alt.datum.NamaProduk == worst_products.iloc[0]['NamaProduk'],  # Highlight worst product
+                alt.value('#b78343'),  # Color for the worst product
+                alt.value('#D3D3D3')  # Color for the other products
+            )
+        ).properties(
+            width=600,
+            height=600
+        )
+
+        # Display the chart in Streamlit
+        st.altair_chart(worst_products_chart)
+        
+
+    # Summarize order outlets
+    st.subheader("Total sales by Outlets")
+    sum_order_outlets_df = df_clean.groupby("Outlet").Qty.sum().sort_values(ascending=False).reset_index()
     # st.dataframe(sum_order_outlets_df)
 
-    # # Show monthly orders
-    # st.subheader("Monthly Orders and Revenue")
-    # monthly_orders_df = df_clean.resample(rule='ME', on='Tanggal').agg({
-    #     "NomorFaktur": "nunique",
-    #     "HeaderTotalFaktur": "sum"
-    # }).reset_index().rename(columns={"NomorFaktur": "order_count", "HeaderTotalFaktur": "revenue"})
-    # monthly_orders_df.index = monthly_orders_df["Tanggal"].dt.strftime('%Y-%m')
-    # st.dataframe(monthly_orders_df)
+    # Define the max and min values
+    max_qty = sum_order_outlets_df['Qty'].max()
+    min_qty = sum_order_outlets_df['Qty'].min()
 
-    # # Plot revenue over time
-    # st.subheader("Revenue Over Time")
-    # plt.figure(figsize=(10, 5))
-    # sns.lineplot(x=monthly_orders_df.index, y=monthly_orders_df['revenue'], marker="o")
-    # plt.title('Monthly Revenue')
-    # plt.xlabel('Month')
-    # plt.ylabel('Revenue')
-    # plt.xticks(rotation=45)
-    # st.pyplot(plt)
+    # Create a new column for color encoding
+    def color_condition(qty, max_qty, min_qty):
+        if qty == max_qty:
+            return '#b78343'  # Gold color for highest value
+        elif qty == min_qty:
+            return '#982B1C'  # Red color for lowest value
+        else:
+            return 'lightgrey'  # Light grey for all others
+
+    # Apply the color condition to each row
+    sum_order_outlets_df['color'] = sum_order_outlets_df['Qty'].apply(lambda qty: color_condition(qty, max_qty, min_qty))
+
+    # Create the Altair bar chart using the color column
+    bar_chart = alt.Chart(sum_order_outlets_df).mark_bar().encode(
+        x=alt.X('Qty:Q', title='Total Sales'),
+        y=alt.Y('Outlet:N', sort='-x', title='Outlet',
+            axis=alt.Axis(labelLimit=500)),  # Increase label limit to show full names
+            color=alt.Color('color:N', scale=None)  # Use the color column directly
+    ).properties(
+        width=1000,
+        height=500
+    )
+
+    # Display the chart in Streamlit
+    st.altair_chart(bar_chart)
+
+    # Optionally display the DataFrame for reference
+    # st.dataframe(sum_order_outlets_df)
 
     
 

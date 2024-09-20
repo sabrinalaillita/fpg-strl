@@ -6,6 +6,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
+import altair as alt
 from pyvis.network import Network
 from mlxtend.preprocessing import TransactionEncoder
 from mlxtend.frequent_patterns import fpgrowth, association_rules
@@ -54,12 +55,12 @@ with st.sidebar:
 st.text(f"Welcome, {st.session_state.get("name")}👋")
 st.title("Market Basket Analysis")
 
-tab1, tab2, tab3 = st.tabs(["Data", "Frequent Itemset", "Result"])
+tab1, tab2, tab3 = st.tabs(["Data", "Frequent Itemset", "Hasil"])
 
 df = pd.read_csv("Sales.csv")
 
 with tab1:
-    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+    uploaded_file = st.file_uploader("Pilih file CSV", type="csv")
         # Check if a file is uploaded
     if uploaded_file is not None:
         # Load the CSV file into a pandas DataFrame
@@ -144,27 +145,26 @@ with tab2:
     with col3:    
         if uploaded_file is not None:
             if not frequent_itemsets.empty:
+                st.subheader("Frequent Itemsets terbaik dari Support")
                 # Sort the itemsets by support
                 top_itemsets = frequent_itemsets.sort_values(by='support', ascending=False).head(10)
 
-                # Create a bar plot
-                fig, ax = plt.subplots(figsize=(8, 5))
-                sns.barplot(
-                    x='support', 
-                    y='itemsets', 
-                    hue='itemsets', 
-                    legend=False, 
-                    data=top_itemsets,
-                    palette='YlOrBr',
-                    ax=ax)
-                for index, value in enumerate(top_itemsets['support']):
-                    plt.text(value, index, round(value, 3), va='center', ha='left', fontsize=10, color='white')
-                ax.set_title('Top Frequent Itemsets by Support', fontsize=14, color='white')
-                ax.set_xlabel('Support')
-                ax.set_ylabel('Itemsets')
-                # ax.tick_params(axis='x', labelsize=12)
-                # ax.tick_params(axis='y', labelsize=12)
-                st.pyplot(fig)
+                # Create the Altair bar chart
+                top_itemsets_chart = alt.Chart(top_itemsets).mark_bar().encode(
+                    x=alt.X('support:Q', title='Support'),
+                    y=alt.Y('itemsets:N', sort='-x', title=None, axis=alt.Axis(labelLimit=500)),  # Sorting by Qty, removing y-axis title
+                    color=alt.condition(
+                        alt.datum.itemsets == top_itemsets.iloc[0]['itemsets'],  # Highlight top product
+                        alt.value('#b78343'),  # Color for the best product
+                        alt.value('#D3D3D3')  # Color for the other products
+                    )
+                ).properties(
+                    width=600,
+                    height=500
+                )
+
+                # Display the chart in Streamlit
+                st.altair_chart(top_itemsets_chart)
                 
             else:
                 st.write("")

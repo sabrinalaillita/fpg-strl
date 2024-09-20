@@ -20,6 +20,12 @@ authenticator = Authenticate(
     config['cookie']['expiry_days']
 )
 
+def card_desc(title, desc, formula, add):
+    with st.expander(title):
+        st.write(desc)
+        st.latex(formula)
+        st.write(add)
+
 left, mid, right = st.columns([1.5,0.5,2])
 with left:
     st.markdown("#")
@@ -58,13 +64,34 @@ elif authentication_status == False:
 
 # Show the main content only if the user is logged in
 if authentication_status:
-    st.text(f"Welcome, {name} 👋")
+    st.text(f"Selamat Datang, {name} 👋")
     
     col1, col2 = st.columns(2)
     with col1:
         st.title("Analisa data penjualan dengan Market Basket Analysis")
-        st.write("Lorem ipsum dolor sit amet consectetur. Et mattis mauris sociis lectus. Eleifend tellus tellus lorem facilisis consequat. Etiam enim phasellus vitae in eu. Praesent gravida tristique odio est. Sed habitant egestas sed purus. Proin pellentesque placerat id consectetur sed habitant odio viverra id.")
+        st.write("Market Basket Analysis adalah teknik analisis data yang digunakan untuk mengidentifikasi pola pembelian pelanggan. Dengan menggunakan algoritma yang tepat, kita dapat mengetahui produk mana saja yang sering dibeli bersamaan, sehingga bisa membantu dalam pengambilan keputusan bisnis seperti pengaturan produk di toko atau kampanye promosi. Analisis ini membantu bisnis untuk lebih memahami perilaku konsumen dan meningkatkan penjualan.")
     
+    with col2:
+        card_desc("Support",
+                    "Support mengukur seberapa sering sebuah kombinasi item (atau produk) muncul dalam keseluruhan data transaksi. Nilai support dihitung dengan rumus:",
+                    r'''
+                    Support(A \Rightarrow B) = \frac{\text{Jumlah Transaksi yang Mengandung A dan B}}{\text{Total Transaksi}}
+                    ''',
+                    "Semakin tinggi nilai support, semakin sering kombinasi produk tersebut dibeli bersama.")
+        card_desc("Confidence",
+                    "Confidence adalah ukuran probabilitas bahwa item B dibeli ketika item A dibeli. Ini dihitung dengan rumus:",
+                    r'''
+                    Confidence(A \Rightarrow B) = \frac{\text{Jumlah Transaksi yang Mengandung A dan B}}{\text{Jumlah Transaksi yang Mengandung A}}
+                    ''',
+                    "Confidence menunjukkan seberapa kuat hubungan antara dua produk.")
+        card_desc("Lift",
+                    "Lift mengukur sejauh mana dua item saling terkait lebih dari yang diharapkan jika keduanya dibeli secara independen. Rumus lift adalah:",
+                    r'''
+                    Lift(A \Rightarrow B) = \frac{\text{Confidence(A }\Rightarrow {\text B)}}{\text{Support(B)}}
+                    ''',
+                    "Nilai lift lebih besar dari 1 menunjukkan bahwa item A dan B memiliki hubungan yang kuat, sementara nilai kurang dari 1 menunjukkan bahwa mereka kemungkinan besar tidak dibeli bersamaan.")
+        
+            
     # Sidebar content
     with st.sidebar:
         _, col1, __ = st.columns([1, 3, 1])
