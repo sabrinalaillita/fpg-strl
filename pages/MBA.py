@@ -38,8 +38,7 @@ def is_user_authenticated():
 
 # Check if user is authenticated at the very top before any page logic
 if not is_user_authenticated():
-    st.error("You must be logged in to view this page.")
-    st.stop()  # Prevents the execution of the rest of the script
+    st.switch_page("Home.py")
     
 with st.sidebar:
     
@@ -52,7 +51,7 @@ with st.sidebar:
     authenticator.logout("Logout", "sidebar")
     
     
-st.text(f"Welcome, {st.session_state.get("name")}👋")
+st.text(f"Selamat Datang, {st.session_state.get("name")}👋")
 st.title("Market Basket Analysis")
 
 tab1, tab2, tab3 = st.tabs(["Data", "Frequent Itemset", "Hasil"])
@@ -168,8 +167,6 @@ with tab2:
                 
             else:
                 st.write("")
-        else:
-            st.write("Silahan upload csv file di TAB DATA untuk dianalisa.")
             
 
 
@@ -229,8 +226,7 @@ with tab3:
                     st.write("Tidak ada association rules yang ditemukan dengan minimum confidence dan lift yang diberikan.")
             else:
                 st.write("")
-        else:
-            st.write("Silahan upload csv file di TAB DATA untuk dianalisa.")
+        
             
     with col4:
         # Check if a file is uploaded
@@ -262,5 +258,4 @@ with tab3:
                     st.write("Tidak ada association rules yang ditemukan dengan minimum confidence dan lift yang diberikan.")
             else:
                 st.write("")
-        else:
-            st.write("Silahan upload csv file di TAB DATA untuk dianalisa.")
+        

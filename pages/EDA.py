@@ -2,6 +2,7 @@ import streamlit as st
 from streamlit_authenticator import Authenticate
 import yaml
 from yaml.loader import SafeLoader
+from time import sleep
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
@@ -28,8 +29,8 @@ def is_user_authenticated():
     return st.session_state.get("authentication_status", False)
 
 if not is_user_authenticated():
-    st.error("You must be logged in to view this page.")
-    st.stop()  # Prevents the execution of the rest of the script
+    st.switch_page("Home.py")
+    
     
 # Sidebar for logout and navigation
 with st.sidebar:
@@ -40,6 +41,7 @@ with st.sidebar:
     st.page_link("pages/EDA.py", label="Exploratory Data Analysis", icon="📈")
     st.write("##")
     authenticator.logout("Logout", "sidebar")
+    
     
 def create_sum_order_items_df(df):
     sum_order_items_df = df.groupby("NamaProduk").Qty.sum().sort_values(ascending=False).reset_index()
@@ -66,8 +68,8 @@ def create_sum_order_outlets_df(df):
 
 # Placeholder for file uploader
 if 'uploaded_file' not in st.session_state:
+    st.text(f"Selamat Datang, {st.session_state.get("name")}👋")
     st.header("Exploratory Data Analysis")
-    st.text(f"Welcome, {st.session_state.get("name")}👋")
     st.markdown("")
     uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
     if uploaded_file is not None:
@@ -144,9 +146,9 @@ if 'uploaded_file' in st.session_state:
             delta_percentage = (delta / previous_month_sales) * 100
 
             # Use st.metric to display the current month's sales and the change
-            st.metric(label="Sales", value=f"{current_month_sales:,.2f}", delta=f"{delta:,.2f} ({delta_percentage:.2f}%)")
+            st.metric(label="Penjualan", value=f"{current_month_sales:,}", delta=f"{delta:,} ({delta_percentage:.2f}%)")
         else:
-            st.write("Not enough data to calculate monthly sales change.")
+            st.write("Tidak cukup data untuk menghitung perubahan penjualan bulanan.")
     
     with metric2:
         # Get the most recent two months to calculate the sales difference
@@ -162,20 +164,20 @@ if 'uploaded_file' in st.session_state:
             delta_percentage = (delta / previous_month_revenue) * 100
 
             # Use st.metric to display the current month's sales and the change
-            st.metric(label="Revenue", value=f"{current_month_revenue:,.2f} IDR", delta=f"{delta:,.2f} IDR ({delta_percentage:.2f}%)")
+            st.metric(label="Pendapatan", value=f"{current_month_revenue:,.2f} IDR", delta=f"{delta:,.2f} IDR ({delta_percentage:.2f}%)")
         else:
-            st.write("Not enough data to calculate monthly sales change.")
+            st.write("Tidak cukup data untuk menghitung perubahan pendapatan bulanan.")
     
     # # Display the dataframe
     # st.dataframe(monthly_orders_df)
     numOrder, numRev = st.columns(2)
     # Create line chart using Altair with title and y-axis limits
     with numOrder:
-        st.subheader("Number of Orders per Month")
+        st.subheader("Jumlah Penjualan per Bulan")
         chart = alt.Chart(monthly_orders_df).mark_line(point=True).encode(
             color=alt.value("#b78343"),
-            x=alt.X('yearmonth(Tanggal):T', title='Month'),
-            y=alt.Y('order_count:Q', title='Orders', scale=alt.Scale(domain=[5000, 9000]))
+            x=alt.X('yearmonth(Tanggal):T', title='Bulan'),
+            y=alt.Y('order_count:Q', title='Penjualan', scale=alt.Scale(domain=[5000, 9000]))
         ).properties(
             width=700,
             height=400
@@ -185,11 +187,11 @@ if 'uploaded_file' in st.session_state:
         st.altair_chart(chart)
         
     with numRev:
-        st.subheader("Total Revenue per Month")
+        st.subheader("Total Pendapatan per Bulan")
         chart2 = alt.Chart(monthly_orders_df).mark_line(point=True).encode(
             color=alt.value("#b78343"),
-            x=alt.X('yearmonth(Tanggal):T', title='Month'),
-            y=alt.Y('revenue:Q', title='Revenue', scale=alt.Scale(domain=[2000000000, 5000000000]))
+            x=alt.X('yearmonth(Tanggal):T', title='Bulan'),
+            y=alt.Y('revenue:Q', title='Pendapatan', scale=alt.Scale(domain=[2000000000, 5000000000]))
         ).properties(
             width=700,
             height=400
@@ -205,7 +207,7 @@ if 'uploaded_file' in st.session_state:
     
     with bestProd:
         # Best Performing Products (Top 5)
-        st.subheader("Best Performing Products by Number of Sales")
+        st.subheader("Produk dengan Penjualan Terbaik")
 
         # Assuming `sum_order_items_df` has already been created with the top products and their quantities
         best_products = sum_order_items_df.head(10)
@@ -213,7 +215,7 @@ if 'uploaded_file' in st.session_state:
 
         # Create the Altair bar chart
         best_products_chart = alt.Chart(best_products).mark_bar().encode(
-            x=alt.X('Qty:Q', title='Quantity Sold'),
+            x=alt.X('Qty:Q', title='Jumlah Terjual'),
             y=alt.Y('NamaProduk:N', sort='-x', title=None, axis=alt.Axis(labelLimit=500)),  # Sorting by Qty, removing y-axis title
             color=alt.condition(
                 alt.datum.NamaProduk == best_products.iloc[0]['NamaProduk'],  # Highlight top product
@@ -230,7 +232,7 @@ if 'uploaded_file' in st.session_state:
 
     with worstProd:
         # Worst Performing Products (Bottom 5)
-        st.subheader("Worst Performing Products by Number of Sales")
+        st.subheader("Produk dengan Penjualan Terburuk")
 
         # Assuming `sum_order_items_df` has already been created with the worst products and their quantities
         worst_products = sum_order_items_df.tail(10).sort_values(by="Qty", ascending=True)
@@ -238,7 +240,7 @@ if 'uploaded_file' in st.session_state:
 
         # Create the Altair bar chart
         worst_products_chart = alt.Chart(worst_products).mark_bar().encode(
-            x=alt.X('Qty:Q', title='Quantity Sold'),
+            x=alt.X('Qty:Q', title='Jumlah Terjual'),
             y=alt.Y('NamaProduk:N', sort='-x', title=None, axis=alt.Axis(labelLimit=500)),  # Sorting by Qty, removing y-axis title
             color=alt.condition(
                 alt.datum.NamaProduk == worst_products.iloc[0]['NamaProduk'],  # Highlight worst product
@@ -255,7 +257,7 @@ if 'uploaded_file' in st.session_state:
         
 
     # Summarize order outlets
-    st.subheader("Total sales by Outlets")
+    st.subheader("Total Penjualan per Outlet")
     sum_order_outlets_df = df_clean.groupby("Outlet").Qty.sum().sort_values(ascending=False).reset_index()
     # st.dataframe(sum_order_outlets_df)
 
@@ -277,7 +279,7 @@ if 'uploaded_file' in st.session_state:
 
     # Create the Altair bar chart using the color column
     bar_chart = alt.Chart(sum_order_outlets_df).mark_bar().encode(
-        x=alt.X('Qty:Q', title='Total Sales'),
+        x=alt.X('Qty:Q', title='Total Penjualan'),
         y=alt.Y('Outlet:N', sort='-x', title='Outlet',
             axis=alt.Axis(labelLimit=500)),  # Increase label limit to show full names
             color=alt.Color('color:N', scale=None)  # Use the color column directly
@@ -289,8 +291,14 @@ if 'uploaded_file' in st.session_state:
     # Display the chart in Streamlit
     st.altair_chart(bar_chart)
 
-    # Optionally display the DataFrame for reference
-    # st.dataframe(sum_order_outlets_df)
+    _,button,__ = st.columns([4,1,4])
+    
+    with button:        
+        if st.button("Ubah Dataset"):
+            del st.session_state['uploaded_file']
+            st.info("Mengalihkan halaman")
+            sleep(0.5)
+            st.rerun()
 
     
 
