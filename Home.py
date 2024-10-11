@@ -36,7 +36,7 @@ if authentication_status != True:
     with right:
         st.markdown("#")
         st.markdown("#")
-        st.image("cropped-Logo-Kedai.png", width=150)
+        st.image("logo_jvld_w.png", width=220)
         st.header("Aplikasi Market Basket Analysis Algoritma FP-Growth")
         
         # st.markdown("#####")
@@ -95,7 +95,7 @@ if authentication_status:
     # Sidebar content
     with st.sidebar:
         _, col1, __ = st.columns([1, 3, 1])
-        col1 = st.image("cropped-Logo-Kedai.png", width=150) 
+        col1 = st.image("logo_jvld_w.png", width=220) 
         st.write("##")
         st.page_link("Home.py", label="Home", icon="🏠")
         st.page_link("pages/MBA.py", label="Market Basket Analysis", icon="🛒")

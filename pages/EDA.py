@@ -34,7 +34,7 @@ if not is_user_authenticated():
     
 # Sidebar for logout and navigation
 with st.sidebar:
-    st.image("cropped-Logo-Kedai.png", width=150)
+    st.image("logo_jvld_w.png", width=220)
     st.write("##")
     st.page_link("Home.py", label="Home", icon="🏠")
     st.page_link("pages/MBA.py", label="Market Basket Analysis", icon="🛒")
