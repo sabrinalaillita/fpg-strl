@@ -8,8 +8,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import altair as alt
-from pyvis.network import Network
-from datetime import datetime
 
 sns.set(style='dark')
 

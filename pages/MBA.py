@@ -7,7 +7,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 import altair as alt
-from pyvis.network import Network
 from mlxtend.preprocessing import TransactionEncoder
 from mlxtend.frequent_patterns import fpgrowth, association_rules
 
