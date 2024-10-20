@@ -69,7 +69,7 @@ if 'uploaded_file' not in st.session_state:
     st.text(f"Selamat Datang, {st.session_state.get("name")}👋")
     st.header("Exploratory Data Analysis")
     st.markdown("")
-    uploaded_file = st.file_uploader("Choose a CSV file", type="csv")
+    uploaded_file = st.file_uploader("Pilih file CSV", type="csv")
     if uploaded_file is not None:
         # Store the file in session state so it's available after the page reloads
         st.session_state['uploaded_file'] = uploaded_file

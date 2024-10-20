@@ -67,7 +67,7 @@ with tab1:
         # Display the DataFrame as a table in the Streamlit app
         st.subheader("Data yang anda kirim:")
         total_data = len(df)
-        st.write(f"Total data = {total_data} transaksi")
+        st.write(f"Total data = {total_data} data")
         
         st.dataframe(df)
     else:
@@ -172,7 +172,7 @@ with tab3:
     with col1:
         container = st.container(border=True)
         container.subheader("Minimum Confidence")
-        min_confidence = container.slider("Nilai antara 0.00 hingga 1.00", min_value=0.00, max_value=1.00, value=0.05, step=0.01, key="min_confidence")
+        min_confidence = container.slider("Nilai antara 0.00 hingga 1.00", min_value=0.00, max_value=1.00, value=0.10, step=0.01, key="min_confidence")
         container.write(f"Confidence sebesar: {min_confidence}")
         st.markdown("#####")
         container.subheader("Minimum Lift")
