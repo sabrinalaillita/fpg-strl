@@ -1,0 +1,2 @@
+Ketik ini untuk run streamlit
+streamlit run --client.showSidebarNavigation=False Home.py
