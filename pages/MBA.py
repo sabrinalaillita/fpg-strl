@@ -99,7 +99,7 @@ df_clean['Status'] = df_clean['Status'].str.title()
 df_clean['SKU_Produk'] = df_clean['SKU_Produk'].str.upper()
 df_clean['NamaProduk'] = df_clean['NamaProduk'].str.title()
 
-# --------------- CONVERT DATA FOR MARKET BASKET ANALYSIS ---------------
+# -------------- CONVERT DATA FOR MARKET BASKET ANALYSIS ---------------
 
 transactions = df_clean.groupby('NomorFaktur')['NamaProduk'].apply(list)
 

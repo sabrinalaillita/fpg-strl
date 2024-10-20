@@ -3,14 +3,20 @@ from streamlit_authenticator import Authenticate
 import yaml
 from yaml.loader import SafeLoader
 
-# Load the configuration for authentication
-with open('config.yaml') as file:
-    config = yaml.load(file, Loader=SafeLoader)
-
 # Set wide layout for the page
 def wide_space_default():
     st.set_page_config(layout="wide")
 wide_space_default()
+
+def card_desc(title, desc, formula, add):
+    with st.expander(title):
+        st.write(desc)
+        st.latex(formula)
+        st.write(add)
+
+# Load the configuration for authentication
+with open('config.yaml') as file:
+    config = yaml.load(file, Loader=SafeLoader)
 
 # Initialize authenticator
 authenticator = Authenticate(
@@ -20,13 +26,7 @@ authenticator = Authenticate(
     config['cookie']['expiry_days']
 )
 
-def card_desc(title, desc, formula, add):
-    with st.expander(title):
-        st.write(desc)
-        st.latex(formula)
-        st.write(add)
-
-left, mid, right = st.columns([1.5,0.5,2])
+left, mid, right = st.columns([1.5, 0.5, 2])
 with left:
     st.markdown("#")
     st.markdown("#")
@@ -39,25 +39,7 @@ if authentication_status != True:
         st.image("logo_jvld_w.png", width=220)
         st.header("Aplikasi Market Basket Analysis Algoritma FP-Growth")
         
-        # st.markdown("#####")
-        # spacer_left, form, spacer_right = st.columns([1, 0.8, 1])
-        # with form:
-        #     # Custom CSS to align the title
-        #     st.markdown(
-        #         """
-        #         <style>
-        #         .title {
-        #             text-align: center;
-        #         }
-        #         </style>
-        #         """,
-        #         unsafe_allow_html=True
-        #     )
-        #     kiri, gambar, kanan = st.columns([1,1,1])
-        #     with gambar:
-        #         st.image("cropped-Logo-Kedai.png", width=150)
-        #     st.markdown('<h2 class="title">Aplikasi Market Basket Analysis Algoritma FP-Growth</h2>', unsafe_allow_html=True)
-
+       
 # Show an error message if login fails
 elif authentication_status == False:
     st.error("Username/password is incorrect")
