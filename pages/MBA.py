@@ -68,7 +68,8 @@ with tab1:
         st.subheader("Data yang anda kirim:")
         total_data = len(df)
         st.write(f"Total data = {total_data} data")
-        
+        df.index += 1 
+        df.index.name = 'No.'
         st.dataframe(df)
     else:
         st.write("Silahan upload csv file untuk dianalisa.")
@@ -129,8 +130,8 @@ with tab2:
             frequent_itemsets = fpgrowth(df_transactions, min_support=min_support, use_colnames=True)
             if not frequent_itemsets.empty:
                 frequent_itemsets['itemsets'] = frequent_itemsets['itemsets'].apply(lambda x: ', '.join(list(x)))
-                frequent_itemsets.index += 1  # Adjust index to start from 1 instead of 0
-                frequent_itemsets.index.name = 'No.'  # Optional: Name the index column
+                frequent_itemsets.index += 1 
+                frequent_itemsets.index.name = 'No.'
                 st.dataframe(frequent_itemsets)
             else:
                 st.write("Tidak ada itemset yang ditemukan dengan minimum support yang diberikan.")
@@ -192,8 +193,8 @@ with tab3:
                     rules['antecedents'] = rules['antecedents'].apply(lambda x: ', '.join(list(x)))
                     rules['consequents'] = rules['consequents'].apply(lambda x: ', '.join(list(x)))
                     st.subheader("Association Rules")
-                    rules.index += 1  # Adjust index to start from 1 instead of 0
-                    rules.index.name = 'No.'  # Optional: Name the index column
+                    rules.index += 1 
+                    rules.index.name = 'No.'
                     st.dataframe(rules[['antecedents', 'consequents', 'support', 'confidence', 'lift']])
                 else:
                     st.write("Tidak ada association rules yang ditemukan dengan minimum confidence dan lift yang diberikan.")
