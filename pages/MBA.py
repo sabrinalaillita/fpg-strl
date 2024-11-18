@@ -129,6 +129,8 @@ with tab2:
             frequent_itemsets = fpgrowth(df_transactions, min_support=min_support, use_colnames=True)
             if not frequent_itemsets.empty:
                 frequent_itemsets['itemsets'] = frequent_itemsets['itemsets'].apply(lambda x: ', '.join(list(x)))
+                frequent_itemsets.index += 1  # Adjust index to start from 1 instead of 0
+                frequent_itemsets.index.name = 'No.'  # Optional: Name the index column
                 st.dataframe(frequent_itemsets)
             else:
                 st.write("Tidak ada itemset yang ditemukan dengan minimum support yang diberikan.")
@@ -190,6 +192,8 @@ with tab3:
                     rules['antecedents'] = rules['antecedents'].apply(lambda x: ', '.join(list(x)))
                     rules['consequents'] = rules['consequents'].apply(lambda x: ', '.join(list(x)))
                     st.subheader("Association Rules")
+                    rules.index += 1  # Adjust index to start from 1 instead of 0
+                    rules.index.name = 'No.'  # Optional: Name the index column
                     st.dataframe(rules[['antecedents', 'consequents', 'support', 'confidence', 'lift']])
                 else:
                     st.write("Tidak ada association rules yang ditemukan dengan minimum confidence dan lift yang diberikan.")
@@ -198,33 +202,62 @@ with tab3:
         else:
             st.write("Silahan upload csv file di TAB DATA untuk dianalisa.")
     
-    # Check if a file is uploaded
+    
+    # col3, col4 = st.columns(2)
+    # with col3:
     if uploaded_file is not None:
         if not frequent_itemsets.empty:
             
             if not rules.empty:
-                heatmap_data = rules.pivot(index='antecedents', columns='consequents', values='lift')
+                # Filter top 10 rules by lift
+                top_rules = rules.nlargest(10, 'lift')
 
-                # Plot the heatmap
-                fig, ax = plt.subplots(figsize=(12, 10))
-                sns.heatmap(
-                    heatmap_data,
-                    annot=True,
-                    cmap="YlOrBr",
-                    linewidths=.5,
-                    ax=ax
+
+                # Prepare data for visualization by combining antecedents and consequents
+                top_rules['rule'] = top_rules['antecedents'] + ' -> ' + top_rules['consequents']
+
+                # Create Altair bar chart
+                st.subheader("Top Association Rules by Lift")
+                chart = alt.Chart(top_rules).mark_bar().encode(
+                    x=alt.X('lift:Q', title='Lift'),
+                    y=alt.Y('rule:N', sort='-x', title=None, axis=alt.Axis(labelLimit=500)),
+                    tooltip=['rule', 'support', 'confidence', 'lift']
+                ).properties(
+                    width=1000,
+                    height=500
                 )
-                ax.set_title('Heatmap of Itemset Correlations (Lift)', fontsize=14, color='white')
-                st.pyplot(fig)
+                st.altair_chart(chart)
             else:
                 st.write("Tidak ada association rules yang ditemukan dengan minimum confidence dan lift yang diberikan.")
         else:
             st.write("")
-    # col3, col4 = st.columns(2)
-    # with col3:
-        
+    
+    heat, _= st.columns([3,1])
+    with heat:
+        if uploaded_file is not None:
+            if not frequent_itemsets.empty:
+                
+                if not rules.empty:
+                    heatmap_data = rules.pivot(index='antecedents', columns='consequents', values='lift')
+
+                    # Plot the heatmap
+                    st.subheader("Heatmap of Itemset Correlations (Lift)")
+                    fig, ax = plt.subplots(figsize=(8, 8))
+                    sns.heatmap(
+                        heatmap_data,
+                        annot=True,
+                        cmap="YlOrBr",
+                        linewidths=.5,
+                        ax=ax,
+                        square=True
+                    )
+                    st.pyplot(fig)
+                else:
+                    st.write("Tidak ada association rules yang ditemukan dengan minimum confidence dan lift yang diberikan.")
+            else:
+                st.write("")
             
-    # with col4:
+    # with col4:s
     #     # Check if a file is uploaded
     #     if uploaded_file is not None:
     #         if not frequent_itemsets.empty:
