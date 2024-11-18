@@ -142,7 +142,7 @@ with tab2:
     with col3:    
         if uploaded_file is not None:
             if not frequent_itemsets.empty:
-                st.subheader("Frequent Itemsets terbaik dari Support")
+                st.subheader("Frequent Itemsets terbaik berdasarkan Support")
                 # Sort the itemsets by support
                 top_itemsets = frequent_itemsets.sort_values(by='support', ascending=False).head(10)
 
@@ -217,7 +217,7 @@ with tab3:
                 top_rules['rule'] = top_rules['antecedents'] + ' -> ' + top_rules['consequents']
 
                 # Create Altair bar chart
-                st.subheader("Top Association Rules by Lift")
+                st.subheader("Association Rules Teratas berdasarkan Lift")
                 chart = alt.Chart(top_rules).mark_bar().encode(
                     x=alt.X('lift:Q', title='Lift'),
                     y=alt.Y('rule:N', sort='-x', title=None, axis=alt.Axis(labelLimit=500)),
@@ -241,7 +241,7 @@ with tab3:
                     heatmap_data = rules.pivot(index='antecedents', columns='consequents', values='lift')
 
                     # Plot the heatmap
-                    st.subheader("Heatmap of Itemset Correlations (Lift)")
+                    st.subheader("Heatmap dari Korelasi Itemset (Lift)")
                     fig, ax = plt.subplots(figsize=(8, 8))
                     sns.heatmap(
                         heatmap_data,

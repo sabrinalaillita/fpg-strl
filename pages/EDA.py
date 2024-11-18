@@ -177,7 +177,7 @@ if 'uploaded_file' in st.session_state:
             x=alt.X('yearmonth(Tanggal):T', title='Bulan'),
             y=alt.Y('order_count:Q', title='Penjualan', scale=alt.Scale(domain=[5000, 9000]))
         ).properties(
-            width=700,
+            width=550,
             height=400
         )
 
@@ -191,7 +191,7 @@ if 'uploaded_file' in st.session_state:
             x=alt.X('yearmonth(Tanggal):T', title='Bulan'),
             y=alt.Y('revenue:Q', title='Pendapatan', scale=alt.Scale(domain=[2000000000, 5000000000]))
         ).properties(
-            width=700,
+            width=550,
             height=400
         )
 
@@ -282,7 +282,7 @@ if 'uploaded_file' in st.session_state:
             axis=alt.Axis(labelLimit=500)),  # Increase label limit to show full names
             color=alt.Color('color:N', scale=None)  # Use the color column directly
     ).properties(
-        width=1000,
+        width=1100,
         height=500
     )
 
